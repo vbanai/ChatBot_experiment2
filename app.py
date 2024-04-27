@@ -75,7 +75,7 @@ def flask_app(host=None, port=None):
 #-----------------------------------------------------------------------------------------------
 
   
-  df_existing_customer_tracking, df_existing_customer, df_potential_customer, passages, passages2, passages3, passages4, passages5, passages6=data_preparation()
+  df_existing_customer, passages=data_preparation()
 
   client_details_placeholder = "placeholder for client details"
   extracted_relevant_paragraphs = "placeholder for extracted paragraph"
@@ -190,35 +190,18 @@ def flask_app(host=None, port=None):
       return response
     else:
 
-      # #LangChain Context management (it is not working in a way I expected)
-      # if session['chat_history_for_contextcreator']!=[]:
-      #   chat_history_Session=chat_history_fromSession_toLangChain(session['chat_history_for_contextcreator'])
-      # else:
-      #   chat_history_Session=session['chat_history_for_contextcreator']
-      # message_fromLangChain=contextcreator(input, chat_history_Session)
-      # session['chat_history_for_contextcreator'] = addChatHistory_fromOpenAI(session['chat_history_for_contextcreator'], message_fromLangChain)
-      # input=message_fromLangChain[1].content  
-      
-      # if session['chat_history_for_contextcreator']!=[]:
-      #   translated_context=translation(session['chat_history_for_contextcreator'], "EN-US")
-      #   translated_input=translation(input, "EN-US")
-      #   print("FORDÍTÁSOK:", translated_context, translated_input)
-      #   standalonequery=spacy_context(translated_context, translated_input, nlp)
-      #   if standalonequery==0:
-      #     standalonequery=spacy_context(translated_context, adjust_query(translated_input), nlp)
-      #   if standalonequery!=0:
-      #     input=translation(standalonequery, "HU")
+   
 
       print(input)
       context.append({'role':'user', 'content':f"{input}"})
       print("KEZDÉS")
       start_time = time.time()
       rerankrequest = RerankRequest(query=input, passages=passages)
-      rerankrequest2 = RerankRequest(query=input, passages=passages2)
-      rerankrequest3 = RerankRequest(query=input, passages=passages3)
-      rerankrequest4 = RerankRequest(query=input, passages=passages4)
-      rerankrequest5 = RerankRequest(query=input, passages=passages5)
-      rerankrequest6 = RerankRequest(query=input, passages=passages6)
+      # rerankrequest2 = RerankRequest(query=input, passages=passages2)
+      # rerankrequest3 = RerankRequest(query=input, passages=passages3)
+      # rerankrequest4 = RerankRequest(query=input, passages=passages4)
+      # rerankrequest5 = RerankRequest(query=input, passages=passages5)
+      # rerankrequest6 = RerankRequest(query=input, passages=passages6)
       
       #extracted_paragraphs='\n'.join(data['text'] for data in ranker.rerank(rerankrequest)[:20])
       extracted_paragraphs= []
@@ -231,11 +214,11 @@ def flask_app(host=None, port=None):
           extracted_paragraphs.append([sentence])
 
       extracted_para_creation(rerankrequest)
-      extracted_para_creation(rerankrequest2)
-      extracted_para_creation(rerankrequest3)
-      extracted_para_creation(rerankrequest4)
-      extracted_para_creation(rerankrequest5)
-      extracted_para_creation(rerankrequest6)
+      # extracted_para_creation(rerankrequest2)
+      # extracted_para_creation(rerankrequest3)
+      # extracted_para_creation(rerankrequest4)
+      # extracted_para_creation(rerankrequest5)
+      # extracted_para_creation(rerankrequest6)
 
 
       end_time = time.time()
@@ -268,47 +251,7 @@ def flask_app(host=None, port=None):
     
     
       
-#-----------------------------------------------------------------------------------------------
-#             Updating the databases with the new conversation
-#-----------------------------------------------------------------------------------------------
 
-
-  def output_file_creation(df_existing_customer_tracking, df_potential_customer, textvariable):
-    load_dotenv()
-    database_url = os.environ.get('DATABASE_URL')
-
-    current_date = datetime.now().date()
-    current_date = current_date.strftime("%Y-%m-%d")
-    new_column_header = 'Chat'+ current_date
-    
-    spotting_identifier=df_existing_customer_tracking["Azonosító szám"].apply(lambda x: textvariable.lower().find(str(x).lower()) !=-1)
-
-    if not any(spotting_identifier)==True:
-      table_name='questions_potentialcustomers'
-      if new_column_header not in df_potential_customer.columns.tolist():
-        df_potential_customer[new_column_header]=None
-        df_potential_customer.loc[0, new_column_header]=''
-        df_potential_customer.loc[0, new_column_header]+=textvariable
-        upload_to_ElephantSQL(database_url, table_name, df_potential_customer)
-        df_potential_customer=df_potential_customer
-      else:
-        last_not_empty_index=df_potential_customer[new_column_header].last_valid_index()
-        df_potential_customer.loc[last_not_empty_index+1, new_column_header]=''
-        df_potential_customer.loc[last_not_empty_index+1, new_column_header]+=textvariable
-        upload_to_ElephantSQL(database_url, table_name, df_potential_customer)
-        df_potential_customer=df_potential_customer
-      
-    else:
-      if new_column_header not in df_existing_customer_tracking.columns.tolist():
-        df_existing_customer_tracking[new_column_header]=''
-  
-      row=df_existing_customer_tracking[spotting_identifier].index.item()
-
-      existing_value = str(df_existing_customer_tracking.loc[row, new_column_header]) if not pd.isna(df_existing_customer_tracking.loc[row, new_column_header]) else ""
-      df_existing_customer_tracking.loc[row, new_column_header]=existing_value + textvariable
-      table_name='orders_instrument_hu_tracking'
-      upload_to_ElephantSQL(database_url, table_name, df_existing_customer_tracking)
-      df_existing_customer_tracking=df_existing_customer_tracking
 
   
   return app

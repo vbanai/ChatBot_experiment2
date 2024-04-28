@@ -58,17 +58,17 @@ def data_preparation():
 
 
   
-  sql_query = 'SELECT * FROM "orders_instrument_hu"'
+  sql_query = 'SELECT * FROM "rendeleskicsi_xlsx"'
   df_existing_customer= pd.read_sql(sql_query, engine)
     
 
   container_name = 'bigfilefolder'
 
-  source_for_theChatBot='tesztexcel_hangszer_400.xlsx'
+  source_for_theChatBot='tesztexcel_hangszer_65.xlsx'
   blob_service_client = BlobServiceClient.from_connection_string(connection_string)
   blob_client = blob_service_client.get_blob_client(container=container_name, blob=source_for_theChatBot)
   temp_dir = tempfile.gettempdir()
-  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_400.xlsx')
+  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_65.xlsx')
 
   with open(temp_file_path_textforChatBot, 'wb') as temp_file:
       blob_data = blob_client.download_blob()

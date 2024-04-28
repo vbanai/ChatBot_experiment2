@@ -55,8 +55,6 @@ def data_preparation():
   database_url=database_url.replace('postgres', 'postgresql')
   engine = create_engine(database_url)
 
-
-
   
   sql_query = 'SELECT * FROM "rendeleskicsi_xlsx"'
   df_existing_customer= pd.read_sql(sql_query, engine)

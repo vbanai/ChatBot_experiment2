@@ -126,22 +126,18 @@ def flask_app(host=None, port=None):
   # def index():
   #   return render_template('index.html')
   
-  @app.route("/clear_session", methods=["GET"])
-  def clear_session():
-    session.clear()
-    session['textvariable'] = ""
-    session['client_details_placeholder'] = "placeholder for client details"
-    session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
-    session['chat_history_for_contextcreator'] = []
+  # @app.route("/clear_session", methods=["GET"])
+  # def clear_session():
+  #   session.clear()
+  #   session['textvariable'] = ""
+  #   session['client_details_placeholder'] = "placeholder for client details"
+  #   session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+  #   session['chat_history_for_contextcreator'] = []
     
-    return "Session cleared!"
-
-  @app.route("/popupchat")
-  def popupchat():
-    return render_template('popupchat.html')
+  #   return "Session cleared!"
 
   
-  @app.route("/messengerchat")
+  @app.route("/")
   def messengerchat():
     
     if 'textvariable' not in session: 
@@ -190,11 +186,7 @@ def flask_app(host=None, port=None):
       return response
     else:
 
-   
-
-      print(input)
       context.append({'role':'user', 'content':f"{input}"})
-      print("KEZDÉS")
       start_time = time.time()
       rerankrequest = RerankRequest(query=input, passages=passages)
       # rerankrequest2 = RerankRequest(query=input, passages=passages2)
@@ -223,13 +215,7 @@ def flask_app(host=None, port=None):
 
       end_time = time.time()
       elapsed_time = end_time - start_time
-      print("Befejezés")
-      print(f"Total time taken: {elapsed_time} seconds") 
-      print("már itt") 
       context[0]['content'] = context[0]['content'].replace(session['extracted_relevant_paragraphs'], str(extracted_paragraphs))
-      print(extracted_paragraphs)
-      print("/Q/Q/Q/Q/Q/Q/Q/Q/Q/Q/Q/Q/Q/Q")
-      print(context)
       session['extracted_relevant_paragraphs'] = str(extracted_paragraphs)
       response=get_completion_from_messages(context)
       session['chat_history_for_contextcreator']=response

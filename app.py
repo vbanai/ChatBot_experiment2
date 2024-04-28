@@ -185,7 +185,7 @@ def flask_app(host=None, port=None):
       context.append({'role':'assistant', 'content':f"{response}"})
       return response
     else:
-
+      
       context.append({'role':'user', 'content':f"{input}"})
       start_time = time.time()
       rerankrequest = RerankRequest(query=input, passages=passages)
@@ -217,8 +217,16 @@ def flask_app(host=None, port=None):
       elapsed_time = end_time - start_time
       context[0]['content'] = context[0]['content'].replace(session['extracted_relevant_paragraphs'], str(extracted_paragraphs))
       session['extracted_relevant_paragraphs'] = str(extracted_paragraphs)
+      logging.debug("EXTRACTED PARAGRAPH: ")
+      logging.debug(extracted_paragraphs)
+      logging.debug(session['extracted_relevant_paragraphs'])
+      logging.debug("CONTEXT")
+      logging.debug(context)
       response=get_completion_from_messages(context)
       session['chat_history_for_contextcreator']=response
+      logging.debug("RESPONSE: ")
+      logging.debug(response)
+      logging.debug(session['chat_history_for_contextcreator'])
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
 
       user_id = generate_user_id()

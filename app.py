@@ -13,50 +13,81 @@ from sqlalchemy import create_engine, text
 import xml.etree.ElementTree as ET
 from azure.storage.blob import BlobServiceClient
 from readdatain import data_preparation
-
+from sqlalchemy.dialects.postgresql import ARRAY
 import logging
 from flashrank import Ranker
 import time
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from datatransformation_to_sql import dataransfromation_sql
+import huspacy
+import hu_core_news_lg
+import psycopg2
 
+load_dotenv()
+# Download HU models if not already downloaded
+huspacy.download()
 
+# Load HU language model
+nlp = hu_core_news_lg.load()
 
 log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
 os.makedirs(log_directory, exist_ok=True)
 logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.INFO)
 
 
+
+
 def flask_app(host=None, port=None):
 
   app=Flask(__name__)
  
-  database_url = os.environ.get('DATABASE_URL')
-  database_url=database_url.replace('postgres', 'postgresql')
-  app.config['SQLALCHEMY_DATABASE_URI']=database_url
-  app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-  db = SQLAlchemy()
+  # database_url = os.environ.get('DATABASE_URL')
+  # database_url=database_url.replace('postgres', 'postgresql')
+  # app.config['SQLALCHEMY_DATABASE_URI']=database_url
+  # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+  # db = SQLAlchemy()
   
 
-  class UserChatHistory(db.Model):
-    __tablename__="existinguser"
-    id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.String(50))
-    message = db.Column(db.String)
+  # class UserChatHistory(db.Model):
+  #   __tablename__="chat_messages"
+  #   id = db.Column(db.Integer, primary_key=True)
+  #   created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  #   user_id = db.Column(db.String(50))
+  #   message = db.Column(db.Text)
+  #   topic = db.Column(db.Text)
     
 
-    def __init__(self, user_id, message):
-        self.user_id = user_id
-        self.message = message
+  #   def __init__(self, user_id, message, topic=None):
+  #       self.user_id = user_id
+  #       self.message = message
+  #       self.topic = topic
+        
 
-  db.init_app(app)
+  # db.init_app(app)
+  host = os.environ.get("HOST_")
+  dbname = 'ChatProject'
+  user = os.environ.get("username")
+  password = os.environ.get("password")
+  sslmode = "require"
+
+  # Construct connection string
+  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
+
+  # Connect to the Azure PostgreSQL database
+  conn = psycopg2.connect(conn_string) 
+  print("Connection established")
+  cursor = conn.cursor()
+
+  # Specify the table name
+  table_name = 'chat_messages_r55'
+
 
   def generate_user_id():
     ip_address = request.remote_addr
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     unique_id = f"{ip_address}_{timestamp}"
-    return unique_id
+    return ip_address
 
   app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
   ranker = Ranker()
@@ -75,7 +106,7 @@ def flask_app(host=None, port=None):
 #-----------------------------------------------------------------------------------------------
 
   
-  df_existing_customer, passages=data_preparation()
+  df_existing_customer, passages, catalogue=data_preparation()
 
   client_details_placeholder = "placeholder for client details"
   extracted_relevant_paragraphs = "placeholder for extracted paragraph"
@@ -88,7 +119,7 @@ def flask_app(host=None, port=None):
       In case of techincal and general question about a music porduct you can use external sources.\
       In case you got question regarding the availability of a product in the shop, prices, general questions like opening hours, transportation \
       relating to the shop don't use external source, please retrive infromation from this document: \n{extracted_relevant_paragraphs}\n\n. Here you can find sublists in a list. \
-      Each sublist represents a product item sold by the store or a topic related to the store. First item of the sublist 'termék' shows the type of the product. Don't consider 'álvány', 'capo', 'pánt' as a guitar!\
+      Each sublist represents a product item sold by the store or a topic related to the store. First item of the sublist 'termék' shows the type of the product. For example don't consider 'álvány', 'capo', 'pánt', 'erősítő' as a guitar!\
       Second item 'típus' details the subtype of the product, third item 'márka' the brand name etc. \
       For exampe: if the user asks something like this: 'what kind of guitars are on stock?' you have to find those 'termék' items which are 'gitár' in the sublists. If you got a question about Conn AS-501-xx-2 saxophone, first check the sublists which contains this expression Conn AS-501-xx-2 and saxophone, and then answer the question. \
       Share all information found regarding 'ár', 'készlet állapot / kapható-e', 'leírás' you can find in the sublist.
@@ -126,15 +157,15 @@ def flask_app(host=None, port=None):
   # def index():
   #   return render_template('index.html')
   
-  # @app.route("/clear_session", methods=["GET"])
-  # def clear_session():
-  #   session.clear()
-  #   session['textvariable'] = ""
-  #   session['client_details_placeholder'] = "placeholder for client details"
-  #   session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
-  #   session['chat_history_for_contextcreator'] = []
+  @app.route("/clear_session", methods=["GET"])
+  def clear_session():
+    session.clear()
+    session['textvariable'] = ""
+    session['client_details_placeholder'] = "placeholder for client details"
+    session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    session['chat_history_for_contextcreator'] = []
     
-  #   return "Session cleared!"
+    return "Session cleared!"
 
   
   @app.route("/")
@@ -179,7 +210,13 @@ def flask_app(host=None, port=None):
       response=get_completion_from_messages(context)
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
       user_id = generate_user_id()
-      new_user_message = UserChatHistory(user_id=user_id, message="USER: " + input + " | " + "ASSISTANT: " + response)
+      new_user_message ="USER: " + input + " | " + "ASSISTANT: " + response
+      created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+      topic=[]
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      # Execute the SQL query
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
+      conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
       context.append({'role':'assistant', 'content':f"{response}"})
@@ -228,11 +265,16 @@ def flask_app(host=None, port=None):
       logging.debug(response)
       logging.debug(session['chat_history_for_contextcreator'])
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
-
+      topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
       user_id = generate_user_id()
-      new_user_message = UserChatHistory(user_id=user_id, message="USER: " + input + " | " + "ASSISTANT: " + response)
-      db.session.add(new_user_message)
-      db.session.commit()
+      created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+      new_user_message = "USER: " + input + " | " + "ASSISTANT: " + response
+      # Execute the SQL query
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
+
+      # Commit the transaction
+      conn.commit()
 
       context.append({'role':'assistant', 'content':f"{response}"})
 

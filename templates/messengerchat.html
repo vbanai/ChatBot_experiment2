@@ -388,6 +388,31 @@ function getHardResponse(userText) {
       getResponse()
     }
   }
+
+
+//   let currentDocumentHeight = 0;
+
+// const sendMessageUpdatingHeight = (height) => {
+//   window.parent.postMessage({ eventName: 'SET_HEIGHT', payload: { height } }, '*');
+// };
+
+// const handleDocumentMutation = () => {
+//   const documentHeight = document.body.scrollHeight;
+
+//   if (documentHeight && documentHeight !== currentDocumentHeight) {
+//     currentDocumentHeight = documentHeight;
+//     sendMessageUpdatingHeight(documentHeight);
+//   }
+// };
+
+// const observer = new MutationObserver(handleDocumentMutation);
+
+// observer.observe(document.body, {
+//   subtree: true,
+//   attributes: true,
+//   childList: true,
+//   characterData: true
+// });
   // // Press enter to send a message
   // $("#textInput").keypress(function (e) {
   //   if (e.which === 13 && !e.shiftKey) {

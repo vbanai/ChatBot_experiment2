@@ -45,7 +45,6 @@ def data_preparation():
     #private_key_str = os.environ.get('PRIVATE_KEY')
     connection_string = os.environ.get("CONNECTION_STRING")
     database_url = os.environ.get('DATABASE_URL')
-    cohere_key=os.environ.get('cohere_key')
 
 
   #--------------------------------------------------------
@@ -62,11 +61,11 @@ def data_preparation():
 
   container_name = 'bigfilefolder'
 
-  source_for_theChatBot='tesztexcel_hangszer_65.xlsx'
+  source_for_theChatBot='tesztexcel_hangszer.xlsx'
   blob_service_client = BlobServiceClient.from_connection_string(connection_string)
   blob_client = blob_service_client.get_blob_client(container=container_name, blob=source_for_theChatBot)
   temp_dir = tempfile.gettempdir()
-  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_65.xlsx')
+  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_300.xlsx')
 
   with open(temp_file_path_textforChatBot, 'wb') as temp_file:
       blob_data = blob_client.download_blob()
@@ -185,5 +184,5 @@ def data_preparation():
 
 
   
-  return df_existing_customer, passages#, passages2, passages3, passages4, passages5, passages6
+  return df_existing_customer, passages, df#, passages2, passages3, passages4, passages5, passages6
 

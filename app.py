@@ -71,6 +71,9 @@ def flask_app(host=None, port=None):
   user = os.environ.get("username")
   password = os.environ.get("password")
   sslmode = "require"
+  logging.debug("HOST_ environment variable: %s", os.environ.get("HOST_"))
+  logging.debug("username environment variable: %s", os.environ.get("username"))
+  logging.debug("password environment variable: %s", os.environ.get("password"))
 
   # Construct connection string
   conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)

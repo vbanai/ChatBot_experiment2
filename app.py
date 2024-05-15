@@ -65,14 +65,14 @@ def flask_app(host=None, port=None):
         
 
   # db.init_app(app)
-  host = os.environ.get("HOST_")
+  hostname = os.environ.get("HOST_")
   dbname = 'ChatProject'
   user = os.environ.get("username")
   password = os.environ.get("password")
   sslmode = "require"
 
   # Construct connection string
-  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
+  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(hostname, user, dbname, password, sslmode)
 
   # Connect to the Azure PostgreSQL database
   conn = psycopg2.connect(conn_string) 

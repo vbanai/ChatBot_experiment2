@@ -72,7 +72,7 @@ def flask_app(host=None, port=None):
   sslmode = "require"
 
   # Construct connection string
-  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(hostname, user, dbname, password, sslmode)
+  conn_string = "hostname={0} user={1} dbname={2} password={3} sslmode={4}".format(hostname, user, dbname, password, sslmode)
 
   # Connect to the Azure PostgreSQL database
   conn = psycopg2.connect(conn_string) 

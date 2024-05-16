@@ -31,10 +31,25 @@ huspacy.download()
 # Load HU language model
 nlp = hu_core_news_lg.load()
 
+# log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
+# os.makedirs(log_directory, exist_ok=True)
+# logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.INFO)
+
+
+
+# Define the log directory
 log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
 os.makedirs(log_directory, exist_ok=True)
-logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.INFO)
 
+# Configure basic logging to write to both a file and stdout
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_directory, 'app.log')),  # Log to file
+        logging.StreamHandler()  # Log to stdout
+    ]
+)
 
 
 

@@ -42,7 +42,7 @@ def flask_app(host=None, port=None):
   loop = asyncio.get_event_loop()
   app, nlp = loop.run_until_complete(initialize_app())
 
-  app=Flask(__name__)
+  #app=Flask(__name__)
  
   # database_url = os.environ.get('DATABASE_URL')
   # database_url=database_url.replace('postgres', 'postgresql')

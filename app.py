@@ -65,26 +65,26 @@ def flask_app(host=None, port=None):
 
   if os.getenv("FLASK_ENV") == "development":
     
-    host = os.environ.get("HOST_")
+    host = os.environ.get("HOST_AZURESQL")
     dbname = 'ChatProject'
-    user = os.environ.get("username")
-    password = os.environ.get("password")
+    user = os.environ.get("username_AZURESQL")
+    password = os.environ.get("password_AZURESQL")
     sslmode = "require"
     
   else:
-    host = os.environ.get("HOST_")
+    host = os.environ.get("HOST_AZURESQL")
     dbname = 'ChatProject'
-    user = os.environ.get("username")
-    password = os.environ.get("password")
+    user = os.environ.get("username_AZURESQL")
+    password = os.environ.get("password_AZURESQL")
     sslmode = "require"
  
   
 
   def check_environment_variables():
     # Check and log the values of the environment variables
-    app.logger.info("HOST_ environment variable: %s", os.environ.get("HOST_"))
-    app.logger.info("username environment variable: %s", os.environ.get("username"))
-    app.logger.info("password environment variable: %s", os.environ.get("password"))
+    app.logger.info("HOST_ environment variable: %s", os.environ.get("HOST_AZURESQL"))
+    app.logger.info("username environment variable: %s", os.environ.get("username_AZURESQL"))
+    app.logger.info("password environment variable: %s", os.environ.get("password_AZURESQL"))
   check_environment_variables()
 
   # Construct connection string

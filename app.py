@@ -33,14 +33,7 @@ nlp = hu_core_news_lg.load()
 
 log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
 os.makedirs(log_directory, exist_ok=True)
-
-# Configure logging
-logging.basicConfig(
-    filename=os.path.join(log_directory, 'app.log'),
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 
 
 
@@ -80,6 +73,7 @@ def flask_app(host=None, port=None):
   logging.debug("HOST_ environment variable: %s", os.environ.get("HOST_"))
   logging.debug("username environment variable: %s", os.environ.get("username"))
   logging.debug("password environment variable: %s", os.environ.get("password"))
+  logging.getLogger().handlers[0].flush()
 
   # Construct connection string
   conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)

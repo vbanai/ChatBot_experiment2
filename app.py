@@ -31,44 +31,16 @@ huspacy.download()
 # Load HU language model
 nlp = hu_core_news_lg.load()
 
-# log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
-# os.makedirs(log_directory, exist_ok=True)
-# logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.INFO)
+log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
+os.makedirs(log_directory, exist_ok=True)
 
-import logging
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-import os
-# Configure Azure Blob Storage credentials
-storage_account_name ='storageforaichatbot'
-storage_account_key = os.environ.get('AZURE_STORAGE_ACCOUNT_KEY')
-container_name = 'logsforchatbot'
-
-# Create a BlobServiceClient object
-blob_service_client = BlobServiceClient.from_connection_string(f"DefaultEndpointsProtocol=https;AccountName={storage_account_name};AccountKey={storage_account_key}")
-
-# Create a ContainerClient object
-container_client = blob_service_client.get_container_client(container_name)
-
-# Create a logging handler for Azure Blob Storage
-class BlobStorageHandler(logging.Handler):
-    def __init__(self, container_client):
-        super().__init__()
-        self.container_client = container_client
-
-    def emit(self, record):
-        try:
-            # Write log message to a blob
-            blob_client = self.container_client.get_blob_client(f"app.log")
-            blob_client.upload_blob(self.format(record))
-        except Exception as e:
-            print("Failed to upload log to Azure Blob Storage:", e)
-
-# Add the Azure Blob Storage handler to the root logger
-blob_storage_handler = BlobStorageHandler(container_client)
-logging.getLogger().addHandler(blob_storage_handler)
-
-# Set the logging level to INFO
-logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.basicConfig(
+    filename=os.path.join(log_directory, 'app.log'),
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 
 

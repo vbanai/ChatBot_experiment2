@@ -23,7 +23,7 @@ from datatransformation_to_sql import dataransfromation_sql
 import huspacy
 import hu_core_news_lg
 import psycopg2
-
+import sys
 load_dotenv()
 # Download HU models if not already downloaded
 huspacy.download()
@@ -33,7 +33,7 @@ nlp = hu_core_news_lg.load()
 
 log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/')
 os.makedirs(log_directory, exist_ok=True)
-logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig(filename=os.path.join(log_directory, 'app.log'), stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
 
 
 

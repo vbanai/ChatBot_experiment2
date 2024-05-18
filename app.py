@@ -1,4 +1,9 @@
 #jtc guitar
+
+from gevent import monkey
+
+# Move this to just before the app runs if the problem persists
+monkey.patch_all()
 import asyncio
 from flask import Flask, render_template, request, session, jsonify
 import os
@@ -24,25 +29,29 @@ import huspacy
 import hu_core_news_lg
 import psycopg2
 import sys
+from gevent import spawn
 
 load_dotenv()
-async def load_language_model_async():
-    huspacy.download()
-    return hu_core_news_lg.load()
+# Download HU models if not already downloaded
+# huspacy.download()
 
-async def initialize_app():
-    app = Flask(__name__)
-    nlp = await load_language_model_async()
-    return app, nlp
+# Load HU language model
+# nlp = hu_core_news_lg.load()
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
+nlp = None
+model_loaded = False
+def load_model():
+    global nlp
+    huspacy.download()
+    nlp = hu_core_news_lg.load()
+    logging.info("SpaCy model loaded")
+
 
 def flask_app(host=None, port=None):
-  loop = asyncio.get_event_loop()
-  app, nlp = loop.run_until_complete(initialize_app())
 
-  #app=Flask(__name__)
+  app=Flask(__name__)
  
   # database_url = os.environ.get('DATABASE_URL')
   # database_url=database_url.replace('postgres', 'postgresql')
@@ -177,6 +186,12 @@ def flask_app(host=None, port=None):
   # @app.route('/home')
   # def index():
   #   return render_template('index.html')
+  @app.before_request
+  def before_request():
+      global model_loaded
+      if not model_loaded:
+          spawn(load_model)
+          model_loaded = True
   
   @app.route("/clear_session", methods=["GET"])
   def clear_session():

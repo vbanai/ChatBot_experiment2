@@ -62,12 +62,23 @@ def flask_app(host=None, port=None):
         
 
   # db.init_app(app)
-  if host is None:
+
+  if os.getenv("FLASK_ENV") == "development":
+    
     host = os.environ.get("HOST_")
-  dbname = 'ChatProject'
-  user = os.environ.get("username")
-  password = os.environ.get("password")
-  sslmode = "require"
+    dbname = 'ChatProject'
+    user = os.environ.get("username")
+    password = os.environ.get("password")
+    sslmode = "require"
+    
+  else:
+    host = os.environ.get("HOST_")
+    dbname = 'ChatProject'
+    user = os.environ.get("username")
+    password = os.environ.get("password")
+    sslmode = "require"
+ 
+  
 
   def check_environment_variables():
     # Check and log the values of the environment variables

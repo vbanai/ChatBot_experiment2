@@ -26,24 +26,24 @@ import psycopg2
 import sys
 
 load_dotenv()
-# Download HU models if not already downloaded
-#huspacy.download()
-
-# Load HU language model
-#nlp = hu_core_news_lg.load()
-
 async def load_language_model_async():
     huspacy.download()
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(None, hu_core_news_lg.load)
+    return hu_core_news_lg.load()
+
+async def initialize_app():
+    app = Flask(__name__)
+    nlp = await load_language_model_async()
+    return app, nlp
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 
 def flask_app(host=None, port=None):
+  loop = asyncio.get_event_loop()
+  app, nlp = loop.run_until_complete(initialize_app())
 
   app=Flask(__name__)
-  nlp = asyncio.run(load_language_model_async())
+ 
   # database_url = os.environ.get('DATABASE_URL')
   # database_url=database_url.replace('postgres', 'postgresql')
   # app.config['SQLALCHEMY_DATABASE_URI']=database_url

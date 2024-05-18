@@ -1,5 +1,5 @@
 #jtc guitar
-
+import asyncio
 from flask import Flask, render_template, request, session, jsonify
 import os
 import pandas as pd
@@ -27,10 +27,15 @@ import sys
 
 load_dotenv()
 # Download HU models if not already downloaded
-huspacy.download()
+#huspacy.download()
 
 # Load HU language model
-nlp = hu_core_news_lg.load()
+#nlp = hu_core_news_lg.load()
+
+async def load_language_model_async():
+    huspacy.download()
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, hu_core_news_lg.load)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -38,7 +43,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 def flask_app(host=None, port=None):
 
   app=Flask(__name__)
- 
+  nlp = asyncio.run(load_language_model_async())
   # database_url = os.environ.get('DATABASE_URL')
   # database_url=database_url.replace('postgres', 'postgresql')
   # app.config['SQLALCHEMY_DATABASE_URI']=database_url

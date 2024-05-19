@@ -102,12 +102,12 @@ def flask_app(host=None, port=None):
   check_environment_variables()
 
   # Construct connection string
-  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
+  ####conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
 
   # Connect to the Azure PostgreSQL database
-  conn = psycopg2.connect(conn_string) 
+  ####conn = psycopg2.connect(conn_string) 
   print("Connection established")
-  cursor = conn.cursor()
+  ####cursor = conn.cursor()
 
   # Specify the table name
   table_name = 'chat_messages_r55'
@@ -186,12 +186,12 @@ def flask_app(host=None, port=None):
   # @app.route('/home')
   # def index():
   #   return render_template('index.html')
-  @app.before_request
-  def before_request():
-      global model_loaded
-      if not model_loaded:
-          spawn(load_model)
-          model_loaded = True
+  # @app.before_request
+  # def before_request():
+  #     global model_loaded
+  #     if not model_loaded:
+  #         spawn(load_model)
+  #         model_loaded = True
   
   @app.route("/clear_session", methods=["GET"])
   def clear_session():
@@ -251,8 +251,8 @@ def flask_app(host=None, port=None):
       topic=[]
       insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
       # Execute the SQL query
-      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
-      conn.commit()
+      ####cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
+      ####conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
       context.append({'role':'assistant', 'content':f"{response}"})
@@ -301,16 +301,14 @@ def flask_app(host=None, port=None):
       logging.debug(response)
       logging.debug(session['chat_history_for_contextcreator'])
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
-      topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
+      ####topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
       user_id = generate_user_id()
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       new_user_message = "USER: " + input + " | " + "ASSISTANT: " + response
       # Execute the SQL query
       insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
-
-      # Commit the transaction
-      conn.commit()
+      ####cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
+      ####conn.commit()
 
       context.append({'role':'assistant', 'content':f"{response}"})
 

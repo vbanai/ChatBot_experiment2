@@ -1,10 +1,9 @@
 #jtc guitar
-# ASC----------------
-# from gevent import monkey
 
-# # Move this to just before the app runs if the problem persists
-# monkey.patch_all()
-# ASC----------------
+from gevent import monkey
+
+# Move this to just before the app runs if the problem persists
+monkey.patch_all()
 import asyncio
 from flask import Flask, render_template, request, session, jsonify
 import os
@@ -41,16 +40,13 @@ load_dotenv()
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-
-# # ASC----------------
-# nlp = None
-# model_loaded = False
-# def load_model():
-#     global nlp
-#     huspacy.download()
-#     nlp = hu_core_news_lg.load()
-#     logging.info("SpaCy model loaded")
-# # ASC----------------
+nlp = None
+model_loaded = False
+def load_model():
+    global nlp
+    huspacy.download()
+    nlp = hu_core_news_lg.load()
+    logging.info("SpaCy model loaded")
 
 
 def flask_app(host=None, port=None):
@@ -105,20 +101,16 @@ def flask_app(host=None, port=None):
     app.logger.info("password environment variable: %s", os.environ.get("password_AZURESQL"))
   check_environment_variables()
 
-  #---------  DB   -----------------
+  # Construct connection string
+  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
 
-  # # Construct connection string
-  # conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
+  # Connect to the Azure PostgreSQL database
+  conn = psycopg2.connect(conn_string) 
+  print("Connection established")
+  cursor = conn.cursor()
 
-  # # Connect to the Azure PostgreSQL database
-  # conn = psycopg2.connect(conn_string) 
-  # print("Connection established")
-  # cursor = conn.cursor()
-
-  # # Specify the table name
-  # table_name = 'chat_messages_r55'
-
-  #---------  DB   -----------------
+  # Specify the table name
+  table_name = 'chat_messages_r55'
 
 
   def generate_user_id():
@@ -194,16 +186,12 @@ def flask_app(host=None, port=None):
   # @app.route('/home')
   # def index():
   #   return render_template('index.html')
-
-
-  # # ASC----------------
-  # @app.before_request
-  # def before_request():
-  #     global model_loaded
-  #     if not model_loaded:
-  #         spawn(load_model)
-  #         model_loaded = True
-  # # ASC----------------
+  @app.before_request
+  def before_request():
+      global model_loaded
+      if not model_loaded:
+          spawn(load_model)
+          model_loaded = True
   
   @app.route("/clear_session", methods=["GET"])
   def clear_session():
@@ -261,14 +249,10 @@ def flask_app(host=None, port=None):
       new_user_message ="USER: " + input + " | " + "ASSISTANT: " + response
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       topic=[]
-
-      #---------  DB   -----------------
-      # insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      # # Execute the SQL query
-      # cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
-      # conn.commit()
-      #---------  DB   -----------------
-
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      # Execute the SQL query
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
+      conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
       context.append({'role':'assistant', 'content':f"{response}"})
@@ -317,20 +301,17 @@ def flask_app(host=None, port=None):
       logging.debug(response)
       logging.debug(session['chat_history_for_contextcreator'])
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
-      ##############topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
+      topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
       user_id = generate_user_id()
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       new_user_message = "USER: " + input + " | " + "ASSISTANT: " + response
+      # Execute the SQL query
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
 
-      #---------  DB   -----------------
+      # Commit the transaction
+      conn.commit()
 
-      # # Execute the SQL query
-      # insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      # cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
-
-      # # Commit the transaction
-      # conn.commit()
-      #---------  DB   -----------------
       context.append({'role':'assistant', 'content':f"{response}"})
 
       #LangChain

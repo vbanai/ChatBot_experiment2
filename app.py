@@ -32,21 +32,39 @@ import sys
 from gevent import spawn
 
 load_dotenv()
-# Download HU models if not already downloaded
-# huspacy.download()
+#Download HU models if not already downloaded
+huspacy.download()
 
-# Load HU language model
-# nlp = hu_core_news_lg.load()
+#Load HU language model
+nlp = hu_core_news_lg.load()
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+#-------------------------- LOGS ------------------------------
 
-nlp = None
-model_loaded = False
-def load_model():
-    global nlp
-    huspacy.download()
-    nlp = hu_core_news_lg.load()
-    logging.info("SpaCy model loaded")
+from logging.handlers import RotatingFileHandler
+
+# Define the log directory and ensure it exists
+log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+os.makedirs(log_directory, exist_ok=True)
+
+# Define the log file path
+log_file_path = os.path.join(log_directory, 'app.log')
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        RotatingFileHandler(log_file_path, maxBytes=5*1024*1024, backupCount=5),  # 5 MB per file, 5 backups
+        logging.StreamHandler()
+    ]
+)
+
+# Example of logging
+logger = logging.getLogger(__name__)
+logger.info("CHECK IF I GOT HERE 2.2.!!!")
+
+#-------------------------- LOGS ------------------------------
+
 
 
 def flask_app(host=None, port=None):
@@ -186,12 +204,7 @@ def flask_app(host=None, port=None):
   # @app.route('/home')
   # def index():
   #   return render_template('index.html')
-  @app.before_request
-  def before_request():
-      global model_loaded
-      if not model_loaded:
-          spawn(load_model)
-          model_loaded = True
+ 
   
   @app.route("/clear_session", methods=["GET"])
   def clear_session():

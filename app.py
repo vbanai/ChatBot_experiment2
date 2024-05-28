@@ -1,10 +1,5 @@
 #jtc guitar
 
-from gevent import monkey
-
-# Move this to just before the app runs if the problem persists
-monkey.patch_all()
-import asyncio
 from flask import Flask, render_template, request, session, jsonify
 import os
 import pandas as pd

@@ -90,43 +90,41 @@ def flask_app(host=None, port=None):
 
   # db.init_app(app)
 
-#1.
-  # if os.getenv("FLASK_ENV") == "development":
+  if os.getenv("FLASK_ENV") == "development":
     
-  #   host = os.environ.get("HOST_AZURESQL")
-  #   dbname = 'ChatProject'
-  #   user = os.environ.get("username_AZURESQL")
-  #   password = os.environ.get("password_AZURESQL")
-  #   sslmode = "require"
+    host = os.environ.get("HOST_AZURESQL")
+    dbname = 'ChatProject'
+    user = os.environ.get("username_AZURESQL")
+    password = os.environ.get("password_AZURESQL")
+    sslmode = "require"
     
-  # else:
-  #   host = os.environ.get("HOST_AZURESQL")
-  #   dbname = 'ChatProject'
-  #   user = os.environ.get("username_AZURESQL")
-  #   password = os.environ.get("password_AZURESQL")
-  #   sslmode = "require"
+  else:
+    host = os.environ.get("HOST_AZURESQL")
+    dbname = 'ChatProject'
+    user = os.environ.get("username_AZURESQL")
+    password = os.environ.get("password_AZURESQL")
+    sslmode = "require"
  
   
 
-  # def check_environment_variables():
-  #   # Check and log the values of the environment variables
-  #   app.logger.info("HOST_ environment variable: %s", os.environ.get("HOST_AZURESQL"))
-  #   app.logger.info("username environment variable: %s", os.environ.get("username_AZURESQL"))
-  #   app.logger.info("password environment variable: %s", os.environ.get("password_AZURESQL"))
-  # check_environment_variables()
+  def check_environment_variables():
+    # Check and log the values of the environment variables
+    app.logger.info("HOST_ environment variable: %s", os.environ.get("HOST_AZURESQL"))
+    app.logger.info("username environment variable: %s", os.environ.get("username_AZURESQL"))
+    app.logger.info("password environment variable: %s", os.environ.get("password_AZURESQL"))
+  check_environment_variables()
 
-  # # Construct connection string
-  # conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
+  # Construct connection string
+  conn_string = "host={0} user={1} dbname={2} password={3} sslmode={4}".format(host, user, dbname, password, sslmode)
 
-  # # Connect to the Azure PostgreSQL database
-  # conn = psycopg2.connect(conn_string) 
-  # print("Connection established")
-  # cursor = conn.cursor()
+  # Connect to the Azure PostgreSQL database
+  conn = psycopg2.connect(conn_string) 
+  print("Connection established")
+  cursor = conn.cursor()
 
-  # # Specify the table name
-  # table_name = 'chat_messages_r55'
+  # Specify the table name
+  table_name = 'chat_messages_r55'
 
-#eddig 1
 
   def generate_user_id():
     ip_address = request.remote_addr
@@ -135,7 +133,10 @@ def flask_app(host=None, port=None):
     return ip_address
 
   app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
-  ranker = Ranker()
+  if os.getenv("FLASK_ENV") == "development":
+    ranker = Ranker()
+  else:
+    ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="/opt")
   class RerankRequest:
 
     def __init__(self, query=None, passages=None):
@@ -259,12 +260,10 @@ def flask_app(host=None, port=None):
       new_user_message ="USER: " + input + " | " + "ASSISTANT: " + response
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       topic=[]
-      #2
-      # insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      # # Execute the SQL query
-      # cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
-      # conn.commit()
-      #eddig 2
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      # Execute the SQL query
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
+      conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
       context.append({'role':'assistant', 'content':f"{response}"})
@@ -318,13 +317,12 @@ def flask_app(host=None, port=None):
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       new_user_message = "USER: " + input + " | " + "ASSISTANT: " + response
       # Execute the SQL query
-      #3
-      # insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      # cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
 
-      # # Commit the transaction 
-      # conn.commit()
-      #eddig3
+      # Commit the transaction
+      conn.commit()
+
       context.append({'role':'assistant', 'content':f"{response}"})
 
       #LangChain

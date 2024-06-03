@@ -56,7 +56,7 @@ logging.basicConfig(
 
 # Example of logging
 logger = logging.getLogger(__name__)
-logger.info("CHECK IF I GOT HERE 2.2.!!!!")
+logger.info("CHECK IF I GOT HERE 2.2.!!!!__")
 
 #-------------------------- LOGS ------------------------------
 

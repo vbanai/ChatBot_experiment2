@@ -2,11 +2,12 @@
 
 from flask import Flask, render_template, request, session, jsonify
 import os
+# import awsgi
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 from ChatGPTpart import get_completion_from_messages, extract_client_number, retrieve_client_details #, translation, spacy_context, adjust_query
-from ElephantSQL import upload_to_ElephantSQL
+
 from psycopg2 import sql
 #from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
@@ -332,6 +333,8 @@ def flask_app(host=None, port=None):
 
       return response
     
+  # def lambda_handler(event, context):
+  #   return awsgi.response(app, event, context, base64_content_types={"image/png"})
     
       
 

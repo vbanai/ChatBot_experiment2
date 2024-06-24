@@ -19,7 +19,6 @@ import itertools
 
 api_key = os.getenv("OPENAI_API_KEY")
 api_key=str(api_key)
-
 client = OpenAI(api_key=api_key)
 
 api_key_translator = os.getenv("Azure_translator_key")

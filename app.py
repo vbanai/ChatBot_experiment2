@@ -134,10 +134,10 @@ def flask_app(host=None, port=None):
     return ip_address
 
   app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
-  if os.getenv("FLASK_ENV") == "development":
-    ranker = Ranker()
-  else:
-    ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="/opt")
+  #if os.getenv("FLASK_ENV") == "development":
+  ranker = Ranker()
+  #else:
+  #  ranker = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="/opt")
   class RerankRequest:
 
     def __init__(self, query=None, passages=None):

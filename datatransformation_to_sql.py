@@ -18,7 +18,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
 
   # path="tesztexcel_hangszer.xlsx"
   df = catalogue
-  df = df.map(lambda x: x.strip() if isinstance(x, str) else x)
+  df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
   df.fillna("####", inplace=True)
 
   stopwords="""a

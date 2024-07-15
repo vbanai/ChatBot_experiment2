@@ -1,4 +1,5 @@
 #jtc guitar
+#https://www.facebook.com/shredmusictv
 
 from flask import Flask, render_template, request, session, jsonify
 import os
@@ -7,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
 from ChatGPTpart import get_completion_from_messages, extract_client_number, retrieve_client_details #, translation, spacy_context, adjust_query
-
+import requests
 from psycopg2 import sql
 #from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, text
@@ -248,6 +249,37 @@ def flask_app(host=None, port=None):
 
     msg=request.form["msg"]
     input=msg
+    user_ip=request.form.get("ip")
+    def get_geolocation(ip):
+      """Get the geographical location information based on the IP address."""
+      response = requests.get(f'http://ip-api.com/json/{ip}')
+      location_data = response.json()
+      latitude = location_data.get('lat')
+      longitude = location_data.get('lon')
+      return latitude, longitude, location_data
+
+    def get_city(latitude, longitude):
+      """Get the city based on latitude and longitude using Nominatim."""
+      url = f'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
+      response = requests.get(url)
+      data = response.json()
+      address = data.get('address', {})
+      city = address.get('city') or address.get('town') or address.get('village')
+      return city
+
+    def main(ip):
+      print(f"IP Address: {ip}")
+      
+      latitude, longitude, location_data = get_geolocation(ip)
+     
+      
+      city = get_city(latitude, longitude)
+      return city, latitude, longitude
+
+    
+    city, latitude, longitude= main(user_ip)
+
+    
     client_number=extract_client_number(input)
     if client_number:
       context.append({'role':'user', 'content':f"{input}"})
@@ -316,7 +348,8 @@ def flask_app(host=None, port=None):
       topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
       user_id = generate_user_id()
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-      new_user_message = "USER: " + input + " | " + "ASSISTANT: " + response
+      new_user_message = f"{city} {latitude} {longitude} USER: {input} | ASSISTANT: {response}"
+
       # Execute the SQL query
       insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
       cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))

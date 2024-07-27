@@ -256,7 +256,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
     text.append(' '.join(lemmas))
 
   text=" ".join(text).lower()    # MESSAGE WITHOUT STOPWORDS AND INFLECTIONS
-  print("TEXT: ", text)
+ 
   list_extraction = []    # CONTAINS THE KEYWORDS FOUND IN EACH MESSAGE
 
 
@@ -275,7 +275,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
             list_extraction.append(match.strip())
 
   list_extraction=list(set(list_extraction))
-  print(list_extraction)
+ 
 
   finalization_list=[]                                       # manufacturer, brand can also be detected
   # finalization_list contains a detected categories in the chat (product, type, manufacturer, brand)
@@ -439,7 +439,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
 
 
   result = [list(item) for item in result]
-  print("Result: ", result)
+
 
 
   has_length_one = any(len(sublist) == 1 for sublist in result)

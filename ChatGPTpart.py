@@ -25,7 +25,7 @@ api_key_translator = os.getenv("Azure_translator_key")
 api_key_DeepL=os.getenv("api_key_deepL")
 
 
-def get_completion_from_messages(messages, model="gpt-3.5-turbo", temperature=0):
+def get_completion_from_messages(messages, model="gpt-4o-mini", temperature=0):   #  gpt-3.5-turbo
   response = client.chat.completions.create(model=model,
   messages=messages,
   temperature=temperature)
@@ -38,7 +38,7 @@ def get_Chat_response(context):
   return response
 
 
-def get_completion(prompt, model="gpt-3.5-turbo",temperature=0): 
+def get_completion(prompt, model="gpt-4o-mini",temperature=0): 
     messages = [{"role": "user", "content": prompt}]
     response = client.chat.completions.create(model=model,
     messages=messages,

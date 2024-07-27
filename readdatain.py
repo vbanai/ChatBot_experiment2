@@ -15,7 +15,6 @@ import openpyxl
 
 
 
-
 #-----------------------------------------------------------------------------------------------
 #             READING THE DATA IN NECESSARY FOR THE PROCESS 
 #-----------------------------------------------------------------------------------------------
@@ -51,21 +50,77 @@ def data_preparation():
   # Loading the postgres SQL database
   #--------------------------------------------------------
 
-  database_url=database_url.replace('postgres', 'postgresql')
-  engine = create_engine(database_url)
+  # database_url=database_url.replace('postgres', 'postgresql')
+  # engine = create_engine(database_url)
 
   
-  sql_query = 'SELECT * FROM "rendeleskicsi_xlsx"'
-  df_existing_customer= pd.read_sql(sql_query, engine)
+  # sql_query = 'SELECT * FROM "rendeleskicsi_xlsx"'
+  # df_existing_customer= pd.read_sql(sql_query, engine)
     
 
   container_name = 'bigfilefolder'
 
-  source_for_theChatBot='tesztexcel_hangszer.xlsx'
+  #-----------------------
+  # Word file reading in
+  #-----------------------
+  
+  source_for_theChatBot_word='r55ertelmezoword.docx'
+  blob_service_client_word = BlobServiceClient.from_connection_string(connection_string)
+  blob_client_word = blob_service_client_word.get_blob_client(container=container_name, blob=source_for_theChatBot_word)
+  blob_content = blob_client_word.download_blob().readall()
+  word_content = blob_content
+  temp_dir = tempfile.gettempdir()
+  temp_file_path_textforChatBot_word = os.path.join(temp_dir, 'r55ertelmezoword.docx')
+  with open(temp_file_path_textforChatBot_word, 'wb') as temp_file:
+    temp_file.write(word_content)
+  
+  # Open the Word file as a ZIP archive
+  with zipfile.ZipFile(temp_file_path_textforChatBot_word, 'r') as zip_file:
+    # Extract the content of 'word/document.xml'
+    xml_content = zip_file.read('word/document.xml')
+  
+  # Parse the XML content
+  xml_root = ET.fromstring(xml_content)
+
+  # Extract text content from paragraphs
+  text_content = []
+  for paragraph in xml_root.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p'):
+      text_blob = ''.join(run.text for run in paragraph.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t'))
+      text_content.append(text_blob)
+
+  # Print the extracted text content
+  word_text='\n'.join(text_content)
+
+  # Optionally, remove the temporary file after processing
+  os.remove(temp_file_path_textforChatBot_word)
+
+
+
+
+
+  #-----------------------
+  # Excel file reading in
+  #-----------------------
+
+  source_for_theChatBot_order='rendeles_kicsi.xlsx'
+  blob_service_client_order = BlobServiceClient.from_connection_string(connection_string)
+  blob_client_order = blob_service_client_order.get_blob_client(container=container_name, blob=source_for_theChatBot_order)
+  temp_dir = tempfile.gettempdir()
+  temp_file_path_textforChatBot_order = os.path.join(temp_dir, 'rendeles_kicsi.xlsx')
+
+  with open(temp_file_path_textforChatBot_order, 'wb') as temp_file:
+      blob_data = blob_client_order.download_blob()
+      blob_data.readinto(temp_file)
+
+  df_existing_customer = pd.read_excel(temp_file_path_textforChatBot_order)
+
+
+
+  source_for_theChatBot='tesztexcel_hangszer_150.xlsx'
   blob_service_client = BlobServiceClient.from_connection_string(connection_string)
   blob_client = blob_service_client.get_blob_client(container=container_name, blob=source_for_theChatBot)
   temp_dir = tempfile.gettempdir()
-  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_300.xlsx')
+  temp_file_path_textforChatBot = os.path.join(temp_dir, 'tesztexcel_hangszer_150.xlsx')
 
   with open(temp_file_path_textforChatBot, 'wb') as temp_file:
       blob_data = blob_client.download_blob()
@@ -168,13 +223,53 @@ def data_preparation():
   # passages5=passage_creation(df5)
   # passages6=passage_creation(df6)
 
+  def divide_text_into_passages(document_text, chunk_length=400):
+    passages = []
+    passage_id = 1
+    for p in document_text.split("\n\n"):
+      sentences = p.split('.')
+      current_chunk = ""
+      
 
+      for i, sentence in enumerate(sentences):
+          # Trim leading and trailing whitespace
+          sentence = sentence.strip()
+          
+          # If the sentence is not empty, add a period at the end
+          if sentence:
+              sentence += '.'
+          
+          # Check if adding the next sentence exceeds the chunk length
+          if len(current_chunk) + len(sentence) > chunk_length:
+              # Add the current chunk to passages
+              passages.append({
+                  "id": passage_id,
+                  "text": current_chunk.strip()
+              })
+              passage_id += 1
+              # Start a new chunk with the current sentence
+              current_chunk = sentence
+          else:
+              # Add the sentence to the current chunk
+              current_chunk += " " + sentence if current_chunk else sentence
 
+      # Add the last chunk if it's not empty
+      if current_chunk.strip():
+          passages.append({
+              "id": passage_id,
+              "text": current_chunk.strip()
+          })
+          passage_id += 1
 
+    return passages
+
+  passages_word_text=divide_text_into_passages(word_text)
+ 
   # os.remove(temp_file_path_embeddings)
   # os.remove(temp_file_path_Lines)
   # os.remove(temp_file_path_cross_scores)
   os.remove(temp_file_path_textforChatBot)
+  os.remove(temp_file_path_textforChatBot_order)
   # os.remove(temp_file_path_textforChatBot2)
   # os.remove(temp_file_path_textforChatBot3)
   # os.remove(temp_file_path_textforChatBot4)
@@ -182,7 +277,10 @@ def data_preparation():
   # os.remove(temp_file_path_textforChatBot6)
 
 
-
   
-  return df_existing_customer, passages, df#, passages2, passages3, passages4, passages5, passages6
+  
+  return df_existing_customer, passages, df, passages_word_text#, passages2, passages3, passages4, passages5, passages6
+
+
+
 

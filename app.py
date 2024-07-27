@@ -99,6 +99,7 @@ def flask_app(host=None, port=None):
     user = os.environ.get("username_AZURESQL")
     password = os.environ.get("password_AZURESQL")
     sslmode = "require"
+    ipinfo_api_key=os.environ.get("ipinfo_api_key")
     
   else:
     host = os.environ.get("HOST_AZURESQL")
@@ -106,6 +107,7 @@ def flask_app(host=None, port=None):
     user = os.environ.get("username_AZURESQL")
     password = os.environ.get("password_AZURESQL")
     sslmode = "require"
+    ipinfo_api_key=os.environ.get("ipinfo_api_key")
  
   
 
@@ -125,7 +127,7 @@ def flask_app(host=None, port=None):
   cursor = conn.cursor()
 
   # Specify the table name
-  table_name = 'chat_messages_r55'
+  table_name = 'chat_messages_latlong'
 
 
   def generate_user_id():
@@ -154,19 +156,20 @@ def flask_app(host=None, port=None):
 #-----------------------------------------------------------------------------------------------
 
   
-  df_existing_customer, passages, catalogue=data_preparation()
+  df_existing_customer, passages, catalogue, passages_word_text=data_preparation()
 
   client_details_placeholder = "placeholder for client details"
   extracted_relevant_paragraphs = "placeholder for extracted paragraph"
+  wordtext_para = "placeholder for wordtext"
   chat_history_for_contextcreator = []
   
   
   context = [
   
   {'role': 'system', 'content': f"""You are a sales assistant for question-answering tasks in a music store. You speak in Hungarian \
-      In case of techincal and general question about a music porduct you can use external sources.\
+      In case of techincal and general question about a music porduct such as 'What kind of guitar strings you recommend for an electrical guitar?' or 'What is the difference between guitar Ibanez and Gibson?' you can use external sources.\
       In case you got question regarding the availability of a product in the shop, prices, general questions like opening hours, transportation \
-      relating to the shop don't use external source, please retrive infromation from this document: \n{extracted_relevant_paragraphs}\n\n. Here you can find sublists in a list. \
+      relating to the shop don't use external source, please retrive infromation from document: \n{wordtext_para}\n\n and this document: \n{extracted_relevant_paragraphs}\n\n. Regarding the second document you can find sublists in a list. \
       Each sublist represents a product item sold by the store or a topic related to the store. First item of the sublist 'termék' shows the type of the product. For example don't consider 'álvány', 'capo', 'pánt', 'erősítő' as a guitar!\
       Second item 'típus' details the subtype of the product, third item 'márka' the brand name etc. \
       For exampe: if the user asks something like this: 'what kind of guitars are on stock?' you have to find those 'termék' items which are 'gitár' in the sublists. If you got a question about Conn AS-501-xx-2 saxophone, first check the sublists which contains this expression Conn AS-501-xx-2 and saxophone, and then answer the question. \
@@ -176,9 +179,6 @@ def flask_app(host=None, port=None):
       Note: if you got question about a broader product category(gitar, piano, violin etc.) what  types are on stock like  " What guitars are available on stock?" In the first sentence of your response say something like this in Hungarian: on this platform I can't list all the items available, but I can give some insight,
       but if you find row where you can see information in the 'termék' and 'leírás' columns only, it means the line item is not about a product but a general topic about the store, so you don't need to say  "on this platform I can't list all the items available but I can give some insight. "
       Answer in 6 sentences maximum retrieving all the information you can find in the sublists and keep the answer concise. \
-      
-      Guitar Brands the shop sells: Ibanez, Gibson, Ovation, Fernandez, Yamaha, Stagg, Raimundo, Alhambra, Fender
-      Pianos the shop sells: Yamaha, Bösendorfer, Stenway and sons.
    
       If the user has a question regarding the ongoing order, ask for the identifier number in Hungarian langauge.\        
       User: Can you give me the identifier number? Assistant: Please provide your identifier number.\
@@ -212,6 +212,7 @@ def flask_app(host=None, port=None):
     session['textvariable'] = ""
     session['client_details_placeholder'] = "placeholder for client details"
     session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    session['wordtext_para'] = "placeholder for wordtext"
     session['chat_history_for_contextcreator'] = []
     
     return "Session cleared!"
@@ -228,6 +229,7 @@ def flask_app(host=None, port=None):
     session.clear()
     session['client_details_placeholder'] = "placeholder for client details"
     session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    session['wordtext_para'] = "placeholder for wordtext"
     session['chat_history_for_contextcreator'] = []
     return render_template('messengerchat.html')
 
@@ -243,6 +245,8 @@ def flask_app(host=None, port=None):
         session['client_details_placeholder'] = "placeholder for client details"
     if 'extracted_relevant_paragraphs' not in session:
         session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    if 'wordtext_para' not in session:
+        session['wordtext_para'] = "placeholder for wordtext"  
     if 'chat_history_for_contextcreator' not in session:
         session['chat_history_for_contextcreator'] = []
 
@@ -250,34 +254,23 @@ def flask_app(host=None, port=None):
     msg=request.form["msg"]
     input=msg
     user_ip=request.form.get("ip")
-    def get_geolocation(ip):
+
+    def get_geolocation(ip, api_key):
       """Get the geographical location information based on the IP address."""
-      response = requests.get(f'http://ip-api.com/json/{ip}')
-      location_data = response.json()
-      latitude = location_data.get('lat')
-      longitude = location_data.get('lon')
-      return latitude, longitude, location_data
+      response = requests.get(f'https://ipinfo.io/{ip}/json?token={api_key}')
+      if response.status_code == 200:
+          location_data = response.json()
+          city = location_data.get('city')
+          loc = location_data.get('loc')
+          if loc:
+              latitude, longitude = loc.split(',')
+              return city, float(latitude), float(longitude)
+      return None, None, None
 
-    def get_city(latitude, longitude):
-      """Get the city based on latitude and longitude using Nominatim."""
-      url = f'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
-      response = requests.get(url)
-      data = response.json()
-      address = data.get('address', {})
-      city = address.get('city') or address.get('town') or address.get('village')
-      return city
-
-    def main(ip):
-      print(f"IP Address: {ip}")
-      
-      latitude, longitude, location_data = get_geolocation(ip)
-     
-      
-      city = get_city(latitude, longitude)
-      return city, latitude, longitude
+  
 
     
-    city, latitude, longitude= main(user_ip)
+    location, latitude, longitude = get_geolocation(user_ip, ipinfo_api_key)
 
     
     client_number=extract_client_number(input)
@@ -286,16 +279,16 @@ def flask_app(host=None, port=None):
       df_existing_customer_row=retrieve_client_details(client_number, df_existing_customer)
       context[0]['content'] = context[0]['content'].replace(session['client_details_placeholder'], str(df_existing_customer_row))
       session['client_details_placeholder']=df_existing_customer_row
-      print(context[0]['content'])
+      
       response=get_completion_from_messages(context)
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
       user_id = generate_user_id()
       new_user_message ="USER: " + input + " | " + "ASSISTANT: " + response
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-      topic=[]
-      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
+      topic=[['rendelés']]
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic, latitude, longitude, location) VALUES (%s, %s, %s, %s, %s, %s, %s);"
       # Execute the SQL query
-      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic))
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic, latitude, longitude, location))
       conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
@@ -328,37 +321,37 @@ def flask_app(host=None, port=None):
       # extracted_para_creation(rerankrequest4)
       # extracted_para_creation(rerankrequest5)
       # extracted_para_creation(rerankrequest6)
-
-
-      end_time = time.time()
-      elapsed_time = end_time - start_time
+   
+      rerankrequest = RerankRequest(query=input, passages=passages_word_text)
+      extracted_paragraphs_wordtext='\n\n'.join(item['text'] for item in ranker.rerank(rerankrequest)[:3])
       context[0]['content'] = context[0]['content'].replace(session['extracted_relevant_paragraphs'], str(extracted_paragraphs))
       session['extracted_relevant_paragraphs'] = str(extracted_paragraphs)
+
+      context[0]['content'] = context[0]['content'].replace(session['wordtext_para'], str(extracted_paragraphs_wordtext))
+      session['wordtext_para'] = str(extracted_paragraphs_wordtext)
+      
       logging.debug("EXTRACTED PARAGRAPH: ")
-      logging.debug(extracted_paragraphs)
-      logging.debug(session['extracted_relevant_paragraphs'])
-      logging.debug("CONTEXT")
-      logging.debug(context)
       response=get_completion_from_messages(context)
+      
       session['chat_history_for_contextcreator']=response
-      logging.debug("RESPONSE: ")
-      logging.debug(response)
-      logging.debug(session['chat_history_for_contextcreator'])
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
       topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
+      
       user_id = generate_user_id()
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-      new_user_message = f"{city} {latitude} {longitude} USER: {input} | ASSISTANT: {response}"
-
+      
+      new_user_message = f"USER: {input} | ASSISTANT: {response}"
+      
       # Execute the SQL query
-      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic) VALUES (%s, %s, %s, %s);"
-      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic_to_load))
-
+      insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic, latitude, longitude, location) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+      cursor.execute(insert_query, (created_at, user_ip, new_user_message, topic_to_load, latitude, longitude, location))
       # Commit the transaction
       conn.commit()
 
       context.append({'role':'assistant', 'content':f"{response}"})
-
+      print("------------------")
+      print(context)
+      print("------------------")
       #LangChain
       # message_fromMainChatbot = [HumanMessage(content=input), AIMessage(content=response)]
       # session['chat_history_for_contextcreator']=json.dumps([message.__dict__ for message in message_fromMainChatbot])

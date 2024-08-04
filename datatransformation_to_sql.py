@@ -360,7 +360,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
               temp_list4.append(i)
         if len(temp_list4)==0:
           finalization_list.append([row['termék'], row['típus'], row['gyártó'], row['márka']])
-  ################################################################################################################################
+  ###############################################################################################################################
   # IN THE finalization_list WE CAN HAVE MANY REDUNDANT LIST AS WE WERE ITERATING THROUGH THE list_extraction AND DID THE CHECK
   # FOR EACH ELEMENT BELONGING TO THE SAME PRODUCT LINE. SO WE HAVE TO DETECT THEM AND REMOVE THE IDENTICAL LISTS OR ELEMENTS
   ###############################################################################################################################

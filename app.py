@@ -254,17 +254,12 @@ def flask_app(host=None, port=None):
   
   @app.route("/")
   def messengerchat():
-    
-    if 'textvariable' not in session: 
-      session['textvariable'] = ""
-    if session['textvariable']!="":
-      #output_file_creation(df_existing_customer_tracking, df_potential_customer, session['textvariable'])
-      session['textvariable']=""
     session.clear()
     session['client_details_placeholder'] = "placeholder for client details"
     session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
     session['wordtext_para'] = "placeholder for wordtext"
     session['chat_history_for_contextcreator'] = []
+    logging.debug(f"Session initialized: {session}")
     return render_template('messengerchat.html')
 
   @app.route("/chat")

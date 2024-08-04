@@ -158,15 +158,48 @@ def flask_app(host=None, port=None):
   
   df_existing_customer, passages, catalogue, passages_word_text=data_preparation()
 
-  client_details_placeholder = "placeholder for client details"
-  extracted_relevant_paragraphs = "placeholder for extracted paragraph"
-  wordtext_para = "placeholder for wordtext"
+  default_client_details_placeholder = "placeholder for client details"
+  default_extracted_relevant_paragraphs = "placeholder for extracted paragraph"
+  default_wordtext_para = "placeholder for wordtext"
   chat_history_for_contextcreator = []
   
   
-  context = [
+  # context = [
   
-  {'role': 'system', 'content': f"""You are a sales assistant for question-answering tasks in a music store. You speak in Hungarian \
+  # {'role': 'system', 'content': f"""You are a sales assistant for question-answering tasks in a music store. You speak in Hungarian \
+  #     In case of techincal and general question about a music porduct such as 'What kind of guitar strings you recommend for an electrical guitar?' or 'What is the difference between guitar Ibanez and Gibson?' you can use external sources.\
+  #     In case you got question regarding the availability of a product in the shop, prices, general questions like opening hours, transportation \
+  #     relating to the shop don't use external source, please retrive infromation from document: \n{wordtext_para}\n\n and this document: \n{extracted_relevant_paragraphs}\n\n. Regarding the second document you can find sublists in a list. \
+  #     Each sublist represents a product item sold by the store or a topic related to the store. First item of the sublist 'termék' shows the type of the product. For example don't consider 'álvány', 'capo', 'pánt', 'erősítő' as a guitar!\
+  #     Second item 'típus' details the subtype of the product, third item 'márka' the brand name etc. \
+  #     For exampe: if the user asks something like this: 'what kind of guitars are on stock?' you have to find those 'termék' items which are 'gitár' in the sublists. If you got a question about Conn AS-501-xx-2 saxophone, first check the sublists which contains this expression Conn AS-501-xx-2 and saxophone, and then answer the question. \
+  #     Share all information found regarding 'ár', 'készlet állapot / kapható-e', 'leírás' you can find in the sublist.
+  #     If you find nan regarding 'típus' , 'gyártó', 'készlet állapot / kapható-e', 'ár' it means that the query is a general topic relating to store like opening hours, transportation etc. Retrieve the information in the 'leírás'.
+  
+  #     Note: if you got question about a broader product category(gitar, piano, violin etc.) what  types are on stock like  " What guitars are available on stock?" In the first sentence of your response say something like this in Hungarian: on this platform I can't list all the items available, but I can give some insight,
+  #     but if you find row where you can see information in the 'termék' and 'leírás' columns only, it means the line item is not about a product but a general topic about the store, so you don't need to say  "on this platform I can't list all the items available but I can give some insight. "
+  #     Answer in 6 sentences maximum retrieving all the information you can find in the sublists and keep the answer concise. \
+   
+  #     If the user has a question regarding the ongoing order, ask for the identifier number in Hungarian langauge.\        
+  #     User: Can you give me the identifier number? Assistant: Please provide your identifier number.\
+  #     If the identifier number is provided, answer the user question according to the retrieved document: \n{client_details_placeholder}\n\n.\
+  #     If you can find any details, inform the user accordingly.\
+    
+
+  #     If the user asks a question outside music business, you can politely reject it with a response  like:\
+  #     User: What's biology? Assistant: Ebben a témában sajnos nem tudok segíteni.  
+    
+  #     Your response should be in one installment, not multiple parts, in Hungarian language. Always ask if you can help with anything else.
+
+
+  
+  # """}
+  # ]
+
+  def initialize_context(wordtext_para, extracted_relevant_paragraphs, client_details_placeholder):
+    return [
+        {
+'role': 'system', 'content': f"""You are a sales assistant for question-answering tasks in a music store. You speak in Hungarian \
       In case of techincal and general question about a music porduct such as 'What kind of guitar strings you recommend for an electrical guitar?' or 'What is the difference between guitar Ibanez and Gibson?' you can use external sources.\
       In case you got question regarding the availability of a product in the shop, prices, general questions like opening hours, transportation \
       relating to the shop don't use external source, please retrive infromation from document: \n{wordtext_para}\n\n and this document: \n{extracted_relevant_paragraphs}\n\n. Regarding the second document you can find sublists in a list. \
@@ -193,8 +226,9 @@ def flask_app(host=None, port=None):
 
 
   
-  """}
-  ]
+  """
+         }
+    ]
 #-----------------------------------------------------------------------------------------------
 #             Flask ROUTING
 #-----------------------------------------------------------------------------------------------
@@ -239,20 +273,33 @@ def flask_app(host=None, port=None):
  
   @app.route("/get", methods=["GET", "POST"])
   def chat():
-    if 'textvariable' not in session:
-        session['textvariable'] = ""
-    if 'client_details_placeholder' not in session:
-        session['client_details_placeholder'] = "placeholder for client details"
-    if 'extracted_relevant_paragraphs' not in session:
-        session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
-    if 'wordtext_para' not in session:
-        session['wordtext_para'] = "placeholder for wordtext"  
-    if 'chat_history_for_contextcreator' not in session:
-        session['chat_history_for_contextcreator'] = []
+    # if 'textvariable' not in session:
+    #     session['textvariable'] = ""
+    # if 'client_details_placeholder' not in session:
+    #     session['client_details_placeholder'] = "placeholder for client details"
+    # if 'extracted_relevant_paragraphs' not in session:
+    #     session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    # if 'wordtext_para' not in session:
+    #     session['wordtext_para'] = "placeholder for wordtext"  
+    # if 'chat_history_for_contextcreator' not in session:
+    #     session['chat_history_for_contextcreator'] = []
 
+    context = initialize_context(
+        session.get('wordtext_para', 'default_wordtext_para'),
+        session.get('extracted_relevant_paragraphs', 'default_extracted_relevant_paragraphs'),
+        session.get('client_details_placeholder', 'default_client_details_placeholder')
+    )
+
+    chat_history = session.get('chat_history_for_contextcreator', [])
+
+    for entry in chat_history:
+        context.append(entry)
+
+    
 
     msg=request.form["msg"]
     input=msg
+
     user_ip=request.form.get("ip")
 
     def get_geolocation(ip, api_key):
@@ -295,7 +342,6 @@ def flask_app(host=None, port=None):
       context.append({'role':'assistant', 'content':f"{response}"})
       return response
     else:
-      
       context.append({'role':'user', 'content':f"{input}"})
       start_time = time.time()
       rerankrequest = RerankRequest(query=input, passages=passages)
@@ -356,6 +402,9 @@ def flask_app(host=None, port=None):
       # message_fromMainChatbot = [HumanMessage(content=input), AIMessage(content=response)]
       # session['chat_history_for_contextcreator']=json.dumps([message.__dict__ for message in message_fromMainChatbot])
       # print(session['chat_history_for_contextcreator'])
+      chat_history.append({'role': 'user', 'content': input})
+      chat_history.append({'role': 'assistant', 'content': response})
+      session['chat_history_for_contextcreator'] = chat_history
 
       return response
     

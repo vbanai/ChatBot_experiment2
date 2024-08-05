@@ -270,19 +270,19 @@ def flask_app(host=None, port=None):
   def chat():
     # if 'textvariable' not in session:
     #     session['textvariable'] = ""
-    # if 'client_details_placeholder' not in session:
-    #     session['client_details_placeholder'] = "placeholder for client details"
-    # if 'extracted_relevant_paragraphs' not in session:
-    #     session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
-    # if 'wordtext_para' not in session:
-    #     session['wordtext_para'] = "placeholder for wordtext"  
-    # if 'chat_history_for_contextcreator' not in session:
-    #     session['chat_history_for_contextcreator'] = []
+    if 'client_details_placeholder' not in session:
+        session['client_details_placeholder'] = "placeholder for client details"
+    if 'extracted_relevant_paragraphs' not in session:
+        session['extracted_relevant_paragraphs'] = "placeholder for extracted paragraph"
+    if 'wordtext_para' not in session:
+        session['wordtext_para'] = "placeholder for wordtext"  
+    if 'chat_history_for_contextcreator' not in session:
+        session['chat_history_for_contextcreator'] = []
 
     context = initialize_context(
-        session.get('wordtext_para', 'default_wordtext_para'),
-        session.get('extracted_relevant_paragraphs', 'default_extracted_relevant_paragraphs'),
-        session.get('client_details_placeholder', 'default_client_details_placeholder')
+        session.get('wordtext_para', 'placeholder for wordtext'),
+        session.get('extracted_relevant_paragraphs', 'placeholder for extracted paragraph'),
+        session.get('client_details_placeholder', 'placeholder for client details')
     )
 
     chat_history = session.get('chat_history_for_contextcreator', [])

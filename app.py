@@ -187,7 +187,7 @@ def flask_app(host=None, port=None):
     
 
   #     If the user asks a question outside music business, you can politely reject it with a response  like:\
-  #     User: What's biology? Assistant: Ebben a témában sajnos nem tudok segíteni.  
+  #     User: What's biology? Assistant: Ebben a témában sajnos nem tudok segíteni..  
     
   #     Your response should be in one installment, not multiple parts, in Hungarian language. Always ask if you can help with anything else.
 

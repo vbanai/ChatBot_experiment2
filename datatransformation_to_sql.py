@@ -478,7 +478,7 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
               break
 
   # topic_list.append(result)
-  
+  print(result)
   return str(result)
 
 

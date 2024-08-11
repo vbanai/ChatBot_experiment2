@@ -260,7 +260,7 @@ def flask_app(host=None, port=None):
     session['wordtext_para'] = "placeholder for wordtext"
     session['chat_history_for_contextcreator'] = []
     logging.debug(f"Session initialized: {session}")
-    return render_template('messengerchat_v2.html')
+    return render_template('messengerchat.html')
 
   @app.route("/chat")
   def AIChatBot():

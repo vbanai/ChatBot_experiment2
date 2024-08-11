@@ -17,8 +17,9 @@
     .chat-bar-collapsible {
       position: fixed;
       bottom: 0;
-      right: 50px;
+      right: 90px;
       box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
     }
 
     .collapsible {
@@ -71,10 +72,11 @@
     }
 
     .content {
-      max-height: 0;
+      max-height: 400px;
       overflow: hidden;
       transition: max-height 0.2s ease-out;
       background-color: #f1f1f1;
+      border-radius:10px
     }
 
     .full-chat-block {
@@ -88,13 +90,13 @@
     }
 
     .outer-container {
-      min-height: 400px;
+      min-height: 390px;
       bottom: 0%;
       position: relative;
     }
 
     .chat-container {
-      max-height: 400px;
+      max-height: 390px;
       width: 100%;
       position: absolute;
       bottom: 0;
@@ -115,8 +117,8 @@
       width: 100%;
       align-items: center;
       background-color: rgb(235, 235, 235);
-      border-radius: 10px 10px 0px 0px;
-      padding: 10px 0px 10px 10px;
+      border-radius: 10px 10px 10px 10px;
+      padding: 10px 0px 21px 10px;
     }
 
     .chat-bar-icons {
@@ -275,6 +277,67 @@
         }
     }
 
+      /* CHATBOX
+=============== */
+.chatbox {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+}
+
+/* CONTENT IS CLOSE */
+.chatbox__support {
+    display: flex;
+    flex-direction: column;
+    background: #eee;
+    width: 300px;
+    height: 450px;
+    z-index: -123456;
+    opacity: 0;
+    transition: all .5s ease-in-out;
+}
+
+/* CONTENT ISOPEN */
+.chatbox--active {
+    transform: translateY(-40px);
+    z-index: 123456;
+    opacity: 1;
+    
+}
+
+/* BUTTON */
+.chatbox__button {
+    position: fixed; /* Change to fixed positioning */
+    bottom: 41px; /* Distance from the bottom of the screen */
+    right: 30px; /* Distance from the right edge of the screen */
+    text-align: right;
+    
+}
+
+.chatbox__support {
+    background: #f9f9f9;
+    height: 450px;
+    width: 350px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+
+
+.chatbox__button button,
+.chatbox__button button:focus,
+.chatbox__button button:visited {
+    padding: 10px;
+    background: white;
+    border: none;
+    outline: none;
+    border-top-left-radius: 50px;
+    border-top-right-radius: 50px;
+    border-bottom-left-radius: 50px;
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
     
 
   </style>
@@ -283,7 +346,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Bot</title>
+    <title>Chat Bot Tesztelés</title>
 
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -292,7 +355,7 @@
 
 <body>
     <!-- CHAT BAR BLOCK -->
-    <div class="chat-bar-collapsible">
+    <div class="chat-bar-collapsible chatbox__support">
       <button id="chat-button" type="button" class="collapsible">
         <div class="button-content">
             <div class="button-image">
@@ -307,70 +370,106 @@
         </div>
       </button>
 
-        <div class="content">
-            <div class="full-chat-block">
-                <!-- Message Container -->
-                <div class="outer-container">
-                    <div class="chat-container">
-                        <!-- Messages -->
-                        <div id="chatbox">
-                            <h5 id="chat-timestamp"></h5>
-                            <p id="botStarterMessage" class="botText"><span>Loading...</span></p>
-                        </div>
+      <div class="content">
+        <div class="full-chat-block" >
+            <!-- Message Container -->
+            <div class="outer-container" >
+                <div class="chat-container">
+                    <!-- Messages -->
+                    <div id="chatbox">
+                        <h5 id="chat-timestamp"></h5>
+                        <p id="botStarterMessage" class="botText"><span>Loading...</span></p>
+                    </div>
 
-                        <!-- User input box -->
-                        <div class="chat-bar-input-block">
-                            <div id="userInput">
-                                <input id="textInput" class="input-box" type="text" name="msg"
-                                    placeholder="Enter your message here" onkeydown="handleCostKeydown(event)">
-                                <p></p>
-                            </div>
-
-                            <div class="chat-bar-icons">
-                               
-                                <i id="chat-icon" style="color: #45599e;" class="fa fa-fw fa-send"
-                                    onclick="sendButton()"></i>
-                            </div>
-                        </div>
-
-                        <div id="chat-bar-bottom">
+                    <!-- User input box -->
+                    <div class="chat-bar-input-block">
+                        <div id="userInput">
+                            <input id="textInput" class="input-box" type="text" name="msg"
+                                placeholder="Enter your message here" onkeydown="handleCostKeydown(event)">
                             <p></p>
                         </div>
 
+                        <div class="chat-bar-icons">
+                            
+                            <i id="chat-icon" style="color: #45599e;" class="fa fa-fw fa-send"
+                                onclick="sendButton()"></i>
+                        </div>
                     </div>
-                </div>
 
+                    <div id="chat-bar-bottom">
+                        <p></p>
+                    </div>
+
+                </div>
             </div>
+
         </div>
+      </div>
+          
 
     </div>
-
+    <div class="chatbox__button">
+      <button>button</button>
+    </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="https://api.ipify.org?format=jsonp&callback=getIp"></script>
 <script>
- var userIp = "Unavailable";
 
-  // Function to get user IP address
-  function getUserIP() {
-      return new Promise((resolve, reject) => {
-          $.getJSON("https://api.ipify.org?format=json", function(data) {
-              resolve(data.ip);
-          }).fail(function() {
-              reject("IP address not found");
-          });
-      });
-  }
+class InteractiveChatbox {
+    constructor(a, b, c) {
+        this.args = {
+            button: a,
+            chatbox: b
+        }
+        this.icons = c;
+        this.state = false; 
+    }
 
-  // Get IP address on page load
-  $(document).ready(async function() {
-      try {
-          userIp = await getUserIP();
-         
-      } catch (error) {
-       
+    display() {
+        const {button, chatbox} = this.args;
+        
+        button.addEventListener('click', () => this.toggleState(chatbox))
+    }
+
+    toggleState(chatbox) {
+        this.state = !this.state;
+        this.showOrHideChatBox(chatbox, this.args.button);
+    }
+
+    showOrHideChatBox(chatbox, button) {
+        if(this.state) {
+            chatbox.classList.add('chatbox--active')
+            this.toggleIcon(true, button);
+        } else if (!this.state) {
+            chatbox.classList.remove('chatbox--active')
+            this.toggleIcon(false, button);
+        }
+    }
+
+    toggleIcon(state, button) {
+        const { isClicked, isNotClicked } = this.icons;
+        let b = button.children[0].innerHTML;
+
+        if(state) {
+            button.children[0].innerHTML = isClicked; 
+        } else if(!state) {
+            button.children[0].innerHTML = isNotClicked;
+        }
+    }
+}
+
+
+
+      const chatButton = document.querySelector('.chatbox__button');
+      const chatContent = document.querySelector('.chatbox__support');
+      const icons = {
+          isClicked: '<img src="static/images/chatbot-image.svg" />',
+          isNotClicked: '<img src="static/images/chatbot-image.svg" />'
       }
-  });
+      const chatbox = new InteractiveChatbox(chatButton, chatContent, icons);
+      chatbox.display();
+      chatbox.toggleIcon(false, chatButton);
+
 
   // Collapsible
   var coll = document.getElementsByClassName("collapsible");
@@ -383,10 +482,8 @@
 
           if (content.style.maxHeight) {
               content.style.maxHeight = null;
-              window.parent.postMessage({ type: 'chatCollapsed', height: 70 }, '*');
           } else {
               content.style.maxHeight = content.scrollHeight + "px";
-              window.parent.postMessage({ type: 'chatExpanded', height: 550 }, '*');
           }
 
       });
@@ -428,7 +525,6 @@ function getBotResponse(input) {
     $.ajax({
       data: {
         msg: input,
-        ip:userIp
       },
       type: "POST",
       url: "/get",

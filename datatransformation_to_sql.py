@@ -12,26 +12,12 @@ import numpy as np
 from collections import defaultdict
 import json
 
-#ezeket az importokat törölni:
-import huspacy
-import hu_core_news_lg
-import psycopg2
-import sys
-from gevent import spawn
-
-#Download HU models if not already downloaded
-#huspacy.download()
-
-#Load HU language model
-nlp = hu_core_news_lg.load()
-
 
 def dataransfromation_sql(message_to_analyize, catalogue, nlp):
 
 
-  path="tesztexcel_hangszer_150.xlsx"  #
-  df = pd.read_excel(path)             #
-  # df = catalogue                     # -
+  # path="tesztexcel_hangszer_150.xlsx"
+  df = catalogue
   df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
   df.fillna("####", inplace=True)
 
@@ -501,5 +487,3 @@ def dataransfromation_sql(message_to_analyize, catalogue, nlp):
   # df_pandas['topic'] = topic_list2
   # df_pandas['topic']
 
-text="USER: 367679 | ASSISTANT: A 367679 azonosító számú rendelésed egy basszusgitár, amely jelenleg gyártás alatt áll. Ha bármilyen más kérdésed van, szívesen segítek!"
-print(dataransfromation_sql(text, "asdf", nlp))

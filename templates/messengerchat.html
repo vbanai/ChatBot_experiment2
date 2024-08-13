@@ -77,15 +77,27 @@
       background-color: #f1f1f1;
     }
 
-    .full-chat-block {
-      width: 100%; /*   350px; */
+    /* .full-chat-block {
+      width: 350px; 
       background: white;
       text-align: center;
       overflow: auto;
       scrollbar-width: none;
       height: max-content;
       transition: max-height 0.2s ease-out;
-    }
+    } */
+    .full-chat-block {
+  background: white;
+  text-align: center;
+  overflow: hidden; /* Prevent content from spilling out */
+  box-sizing: border-box; /* Include padding and border in width/height */
+  width: auto;
+  max-width: 100%; /* Prevent overflow beyond the parent container */
+  height: auto;
+  max-height: 100vh; /* Adjust to fit within the viewport height */
+  padding: 10px; /* Adjust padding as needed */
+  border: 1px solid #ccc; /* Add border for visual reference */
+}
 
     .outer-container {
       min-height: 400px;
@@ -525,20 +537,30 @@ function getHardResponse(userText) {
     //----------  Ezt raktam be iframe szélesség módosítására
 
   // Function to adjust the iframe width based on chat application width
-  function adjustIframeWidth() {
-      var chatWidth = document.querySelector('.full-chat-block').offsetWidth;
-      window.parent.postMessage({ type: 'chatWidth', width: chatWidth }, '*');
-  }
+function adjustIframeWidth() {
+    var chatWidth = document.querySelector('.full-chat-block').offsetWidth;
+    // Notify the parent window to adjust the iframe width
+    window.parent.postMessage({ type: 'chatWidth', width: chatWidth }, '*');
+}
 
-  // Call adjustIframeWidth function when the document is fully loaded
-  document.addEventListener('DOMContentLoaded', function() {
-      adjustIframeWidth();
-  });
+// Function to adjust iframe height based on chat content
+function adjustIframeHeight() {
+    var chatHeight = document.querySelector('.full-chat-block').offsetHeight;
+    // Notify the parent window to adjust the iframe height
+    window.parent.postMessage({ type: 'chatHeight', height: chatHeight }, '*');
+}
 
-  // Adjust width on window resize
-  window.addEventListener('resize', function() {
-      adjustIframeWidth();
-  });
+// Call adjustIframeWidth function when the document is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    adjustIframeWidth();
+    adjustIframeHeight();
+});
+
+// Adjust width and height on window resize
+window.addEventListener('resize', function() {
+    adjustIframeWidth();
+    adjustIframeHeight();
+});
 
 
 

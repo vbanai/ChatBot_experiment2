@@ -330,7 +330,7 @@ def flask_app(host=None, port=None):
       topic=[['rendelés']]
       insert_query = f"INSERT INTO {table_name} (created_at, user_id, message, topic, latitude, longitude, location) VALUES (%s, %s, %s, %s, %s, %s, %s);"
       # Execute the SQL query
-      cursor.execute(insert_query, (created_at, user_id, new_user_message, topic, latitude, longitude, location))
+      cursor.execute(insert_query, (created_at, user_id, new_user_message, str(topic), latitude, longitude, location))
       conn.commit()
       # db.session.add(new_user_message)
       # db.session.commit()
@@ -378,7 +378,7 @@ def flask_app(host=None, port=None):
       #session['textvariable']+=("USER: " + input + " | " + "ASSISTANT: " + response)
       topic_to_load=dataransfromation_sql("USER: " + input + " | " + "ASSISTANT: " + response, catalogue, nlp)
       
-      user_id = generate_user_id()
+      #user_id = generate_user_id()
       created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       
       new_user_message = f"USER: {input} | ASSISTANT: {response}"
@@ -390,9 +390,7 @@ def flask_app(host=None, port=None):
       conn.commit()
 
       context.append({'role':'assistant', 'content':f"{response}"})
-      print("------------------")
-      print(context)
-      print("------------------")
+     
       #LangChain
       # message_fromMainChatbot = [HumanMessage(content=input), AIMessage(content=response)]
       # session['chat_history_for_contextcreator']=json.dumps([message.__dict__ for message in message_fromMainChatbot])

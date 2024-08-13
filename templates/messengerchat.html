@@ -78,7 +78,7 @@
     }
 
     .full-chat-block {
-      width: 350px;
+      width: 100%; /*   350px; */
       background: white;
       text-align: center;
       overflow: auto;
@@ -522,9 +522,23 @@ function getHardResponse(userText) {
       getResponse()
     }
   }
+    //----------  Ezt raktam be iframe szélesség módosítására
 
+  // Function to adjust the iframe width based on chat application width
+  function adjustIframeWidth() {
+      var chatWidth = document.querySelector('.full-chat-block').offsetWidth;
+      window.parent.postMessage({ type: 'chatWidth', width: chatWidth }, '*');
+  }
 
+  // Call adjustIframeWidth function when the document is fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+      adjustIframeWidth();
+  });
 
+  // Adjust width on window resize
+  window.addEventListener('resize', function() {
+      adjustIframeWidth();
+  });
 
 
 

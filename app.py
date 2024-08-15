@@ -30,7 +30,7 @@ from gevent import spawn
 
 load_dotenv()
 #Download HU models if not already downloaded
-huspacy.download()
+#huspacy.download()
 
 #Load HU language model
 nlp = hu_core_news_lg.load()

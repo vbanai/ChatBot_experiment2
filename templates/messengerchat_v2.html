@@ -302,7 +302,7 @@
 
 /* CONTENT ISOPEN */
 .chatbox--active {
-    transform: translateY(-0px);
+    transform: translateY(- px);
     z-index: 123456;
     opacity: 1;
     
@@ -490,35 +490,47 @@ $(document).ready(async function() {
     }
 });
 
- // Collapsible
-var coll = document.getElementsByClassName("collapsible");
+// Select the chatbox button and the chatbox support
+var chatboxButton = document.querySelector('.chatbox__button button');
+var chatboxSupport = document.querySelector('.chatbox__support');
 
-for (let i = 0; i < coll.length; i++) {
-    coll[i].addEventListener("click", function () {
-        this.classList.toggle("active");
-
-        var content = this.nextElementSibling;
-        var chatContainer = document.querySelector('.full-chat-block'); // Select the chat container
-
-        if (content.style.maxHeight) {
-            // Chat is collapsing
-            content.style.maxHeight = null;
-            window.parent.postMessage({
-                type: 'chatCollapsed',
-                height: chatContainer.scrollHeight, // Dynamic height for collapsed state
-                width: chatContainer.offsetWidth // Get the current width dynamically
-            }, '*');
-        } else {
-            // Chat is expanding
-            content.style.maxHeight = content.scrollHeight + "px";
-            window.parent.postMessage({
-                type: 'chatExpanded',
-                height: chatContainer.scrollHeight, // Dynamic height for expanded state
-                width: chatContainer.offsetWidth +60 // Get the current width dynamically
-            }, '*');
-        }
-    });
+// Function to calculate dimensions and post message
+function updateChatDimensions() {
+    // Determine which class is active and calculate dimensions accordingly
+    let height, width;
+    if (chatboxSupport.classList.contains('chatbox--active')) {
+        // Chat is expanded
+        height = chatboxSupport.scrollHeight;
+        width = chatboxSupport.offsetWidth+60;
+        console.log('Expanded - Height:', height, 'Width:', width); // Debugging
+        window.parent.postMessage({
+            type: 'chatExpanded',
+            height: height,
+            width: width
+        }, '*');
+    } else {
+        // Chat is collapsed
+        height = chatboxButton.scrollHeight;
+        width = chatboxButton.offsetWidth;
+        console.log('Collapsed - Height:', height, 'Width:', width); // Debugging
+        window.parent.postMessage({
+            type: 'chatCollapsed',
+            height: height,
+            width: width
+        }, '*');
+    }
 }
+
+// Event listener for the button click
+chatboxButton.addEventListener('click', function() {
+    // Toggle the active state
+    chatboxSupport.classList.toggle('chatbox--active');
+    chatboxButton.classList.toggle('chatbox--inactive'); // If you have a separate class for collapsed state
+
+    // Update chat dimensions
+    updateChatDimensions();
+});
+
 
 
   function getTime() {

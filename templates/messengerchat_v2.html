@@ -205,7 +205,7 @@
       }
     }
 
-    @media screen and (max-width:600px) {
+    /* @media screen and (max-width:600px) {
       .full-chat-block {
           width: 100%;
           border-radius: 0px;
@@ -222,7 +222,7 @@
           border-top: 3px solid white;
           border-radius: 0px;
       }
-    }
+    } */
 
     .messages__item--typing {
     will-change: transform;
@@ -494,25 +494,35 @@ $(document).ready(async function() {
 });
 
  // Collapsible
- //var coll = document.getElementsByClassName("collapsible");   
- var coll = document.getElementsByClassName("chatbox__button")
+var coll = document.getElementsByClassName("collapsible");
 
 for (let i = 0; i < coll.length; i++) {
     coll[i].addEventListener("click", function () {
         this.classList.toggle("active");
 
         var content = this.nextElementSibling;
+        var chatContainer = document.querySelector('.full-chat-block'); // Select the chat container
 
         if (content.style.maxHeight) {
+            // Chat is collapsing
             content.style.maxHeight = null;
-            window.parent.postMessage({ type: 'chatCollapsed', height: 100 }, '*');
+            window.parent.postMessage({
+                type: 'chatCollapsed',
+                height: chatContainer.scrollHeight, // Dynamic height for collapsed state
+                width: chatContainer.offsetWidth // Get the current width dynamically
+            }, '*');
         } else {
+            // Chat is expanding
             content.style.maxHeight = content.scrollHeight + "px";
-            window.parent.postMessage({ type: 'chatExpanded', height: 550 }, '*');
+            window.parent.postMessage({
+                type: 'chatExpanded',
+                height: chatContainer.scrollHeight, // Dynamic height for expanded state
+                width: chatContainer.offsetWidth // Get the current width dynamically
+            }, '*');
         }
-
     });
 }
+
 
   function getTime() {
       let today = new Date();

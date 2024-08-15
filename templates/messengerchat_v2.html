@@ -16,8 +16,8 @@
 
     .chat-bar-collapsible {
       position: fixed;
-      bottom: 0;
-      right: 90px;
+      bottom: 0px;
+      right: 60px;
       box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
       border-radius: 10px;
     }
@@ -290,16 +290,19 @@
     display: flex;
     flex-direction: column;
     background: #eee;
-    width: 300px;
-    height: 450px;
-    z-index: -123456;
+    z-index: 9999;
     opacity: 0;
     transition: all .5s ease-in-out;
+    height: 450px;
+    width: 350px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
 }
 
 /* CONTENT ISOPEN */
 .chatbox--active {
-    transform: translateY(-40px);
+    transform: translateY(-0px);
     z-index: 123456;
     opacity: 1;
     
@@ -308,20 +311,14 @@
 /* BUTTON */
 .chatbox__button {
     position: fixed; /* Change to fixed positioning */
-    bottom: 41px; /* Distance from the bottom of the screen */
-    right: 30px; /* Distance from the right edge of the screen */
+    bottom: 
+    0px; /* Distance from the bottom of the screen */
+    right: 0px; /* Distance from the right edge of the screen */
     text-align: right;
     
 }
 
-.chatbox__support {
-    background: #f9f9f9;
-    height: 450px;
-    width: 350px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-}
+
 
 
 
@@ -517,7 +514,7 @@ for (let i = 0; i < coll.length; i++) {
             window.parent.postMessage({
                 type: 'chatExpanded',
                 height: chatContainer.scrollHeight, // Dynamic height for expanded state
-                width: chatContainer.offsetWidth // Get the current width dynamically
+                width: chatContainer.offsetWidth +60 // Get the current width dynamically
             }, '*');
         }
     });

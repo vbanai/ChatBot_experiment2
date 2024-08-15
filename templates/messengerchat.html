@@ -408,7 +408,7 @@ for (let i = 0; i < coll.length; i++) {
             window.parent.postMessage({
                 type: 'chatCollapsed',
                 height: 70,
-                width: chatContainer.offsetWidth // Get the current width dynamically
+                width: 350 // Get the current width dynamically
             }, '*');
         } else {
             // Chat is expanding
@@ -416,7 +416,7 @@ for (let i = 0; i < coll.length; i++) {
             window.parent.postMessage({
                 type: 'chatExpanded',
                 height: 550,
-                width: chatContainer.offsetWidth // Get the current width dynamically
+                width: 350 // Get the current width dynamically
             }, '*');
         }
     });

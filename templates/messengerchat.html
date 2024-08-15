@@ -373,24 +373,55 @@
   });
 
   // Collapsible
-  var coll = document.getElementsByClassName("collapsible");
+  // var coll = document.getElementsByClassName("collapsible");
 
-  for (let i = 0; i < coll.length; i++) {
-      coll[i].addEventListener("click", function () {
-          this.classList.toggle("active");
+  // for (let i = 0; i < coll.length; i++) {
+  //     coll[i].addEventListener("click", function () {
+  //         this.classList.toggle("active");
 
-          var content = this.nextElementSibling;
+  //         var content = this.nextElementSibling;
 
-          if (content.style.maxHeight) {
-              content.style.maxHeight = null;
-              window.parent.postMessage({ type: 'chatCollapsed', height: 70 }, '*');
-          } else {
-              content.style.maxHeight = content.scrollHeight + "px";
-              window.parent.postMessage({ type: 'chatExpanded', height: 550 }, '*');
-          }
+  //         if (content.style.maxHeight) {
+  //             content.style.maxHeight = null;
+  //             window.parent.postMessage({ type: 'chatCollapsed', height: 70 }, '*');
+  //         } else {
+  //             content.style.maxHeight = content.scrollHeight + "px";
+  //             window.parent.postMessage({ type: 'chatExpanded', height: 550 }, '*');
+  //         }
 
-      });
-  }
+  //     });
+  // }
+
+  // Collapsible
+var coll = document.getElementsByClassName("collapsible");
+
+for (let i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function () {
+        this.classList.toggle("active");
+
+        var content = this.nextElementSibling;
+        var chatContainer = document.querySelector('.full-chat-block'); // Select the chat container
+
+        if (content.style.maxHeight) {
+            // Chat is collapsing
+            content.style.maxHeight = null;
+            window.parent.postMessage({
+                type: 'chatCollapsed',
+                height: 70,
+                width: chatContainer.offsetWidth // Get the current width dynamically
+            }, '*');
+        } else {
+            // Chat is expanding
+            content.style.maxHeight = content.scrollHeight + "px";
+            window.parent.postMessage({
+                type: 'chatExpanded',
+                height: 550,
+                width: chatContainer.offsetWidth // Get the current width dynamically
+            }, '*');
+        }
+    });
+}
+
 
   function getTime() {
       let today = new Date();

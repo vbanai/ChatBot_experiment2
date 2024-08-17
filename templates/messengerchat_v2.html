@@ -108,8 +108,11 @@
     .chat-container::-webkit-scrollbar {
       display: none;
     }
+    
 
     .chat-bar-input-block {
+      position: sticky;
+      bottom: 0;
       display: flex;
       float: left;
       box-sizing: border-box;
@@ -279,11 +282,7 @@
 
       /* CHATBOX
 =============== */
-.chatbox {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-}
+
 
 /* CONTENT IS CLOSE */
 .chatbox__support {
@@ -614,7 +613,7 @@ function getHardResponse(userText) {
   fetchAndDisplayResponse();
 }
 
-  //Gets the text text from the input box and processes it
+  //Gets the text from the input box and processes it
   function getResponse() {
       let userText = $("#textInput").val();
 
